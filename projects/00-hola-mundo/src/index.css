@@ -1,0 +1,18 @@
+body {
+    margin: 0;
+    background-color: #222;
+    font-family: system-ui;
+    display: grid;
+    place-content: center;
+    min-height: 100vh;
+}
+
+/* A nivel de aplicación si le aplicamos un margin-bottom a los componentes TwitterCard
+    
+    ahora si la separación la tenemos a nivel del contenedor
+*/
+.App {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
