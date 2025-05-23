@@ -1,39 +1,25 @@
 import { useState } from "react";
+import confetti from "canvas-confetti"; //Librería para hacer confetti
+//Importamos los componentes
+import { Square } from "./components/Square.jsx";
+//Importamos el archivo/fichero de constantes
+//import { TURNS, WINNER_COMBOS } from "./constants.js";
+import { TURNS } from "./constants.js";
+//Importamos la lógica del tablero
+import { checkWinnerFrom, checkEndGame } from "./logic/board.js";
+//Importamos el modal del ganador
+import { WinnerModal } from "./components/WinnerModal.jsx";
 import "./App.css";
 
-const TURNS = {
-	X: "x",
-	O: "o",
-};
+//Fuera de contexto - estudiando rest operator y spread operator
+/*
+	const numeros = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+	const [uno, dos, ...restoDeNumeros] = numeros;
+	console.log(`rest operator ${restoDeNumeros}`);
 
-const WINNER_COMBOS = [
-	//Horizontal
-	[0, 1, 2],
-	[3, 4, 5],
-	[6, 7, 8],
-	//Vertical
-	[0, 3, 6],
-	[1, 4, 7],
-	[2, 5, 8],
-	//Diagonal
-	[0, 4, 8],
-	[2, 4, 6],
-];
-
-const Square = ({ children, isSelected, updateBoard, index }) => {
-	//Si está seleccionado, le damos la clase is-selected, sino no se la damos
-	const className = `square ${isSelected ? "is-selected" : ""}`;
-
-	const handleClick = () => {
-		updateBoard(index);
-	};
-
-	return (
-		<div className={className} onClick={handleClick}>
-			{children}
-		</div>
-	);
-};
+	const numeros2 = [...numeros];
+	console.log(`spread operator ${numeros2}`);
+*/
 
 function App() {
 	//Estado para el tablero
@@ -43,39 +29,21 @@ function App() {
 	//Estado para el ganador
 	const [winner, setWinner] = useState(null); //null significa que no hay ganador, false significa que hay empate
 
-	const checkWinner = (boardToCheck) => {
-		for (const combo of WINNER_COMBOS) {
-			const [a, b, c] = combo;
-			if (
-				//Si en la posición a, b y c hay algo (x u o) y son iguales
-				boardToCheck[a] && // Si posición 0 --> tiene x u o
-				boardToCheck[a] === boardToCheck[b] && // Si posición 0 y 1 --> tiene x u o y son iguales
-				boardToCheck[a] === boardToCheck[c] // Si posición 0 y 2 --> tiene x u o y son iguales
-				//Esto significa que hay un ganador
-			) {
-				return boardToCheck[a]; //Nos devuelve x u o --> o sea nos devuelve el ganador
-			}
-		}
-		//Si no hay ganador, devolvemos null
-		return null;
+	const resetGame = () => {
+		//Volvemos al estado inicial el tablero, el turno y el ganador
+		setBoard(Array(9).fill(null)); //Reseteamos el tablero
+		setTurn(TURNS.X); //Reseteamos el turno
+		setWinner(null); //Reseteamos el ganador
 	};
-
-	//Fuera de contexto - estudiando rest operator y spread operator
-	/*
-	const numeros = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-	const [uno, dos, ...restoDeNumeros] = numeros;
-	console.log(`rest operator ${restoDeNumeros}`);
-
-	const numeros2 = [...numeros];
-	console.log(`spread operator ${numeros2}`);
-	*/
 
 	//Función para actualizar el tablero
 	const updateBoard = (index) => {
-		//Cambiamos el turno
-		const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X;
-		//Actualizamos el estado de los turnos
-		setTurn(newTurn);
+		//Si en el índice ya hay algo, no se puede hacer click -> o sea que no se sobrescriba - No actualizamos esta posición si ya tiene algo
+		//Si ya hay algo o si ya hay un ganador, no se hace nada
+		if (board[index] || winner) {
+			return; //Return pelado - no se hace nada
+		}
+
 		//Cambiamos el tablero (le ponemos el x o el o)
 		const newBoard = [...board];
 		//El nuevo tablero recibe el indice (que es en qué posición se hizo click) y a esa posición le asignamos el turno (x u o)
@@ -83,31 +51,33 @@ function App() {
 		//Actualizamos el tablero
 		setBoard(newBoard);
 
-		//Si en el índice ya hay algo, no se puede hacer click -> o sea que no se sobrescriba - No actualizamos esta posición si ya tiene algo
-		//Si ya hay algo o si ya hay un ganador, no se hace nada
-		if (board[index] || winner) {
-			return; //Return pelado - no se hace nada
-		}
+		//Cambiamos el turno
+		const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X;
+		//Actualizamos el estado de los turnos
+		setTurn(newTurn);
 
 		//Revisamos si hay un ganador
-		const newWinner = checkWinner(newBoard);
+		const newWinner = checkWinnerFrom(newBoard);
 		//Si hay un ganador, actualizamos el estado del ganador
 		if (newWinner) {
+			confetti(); //Llamamos a la librería de confetti
 			setWinner(newWinner);
-			//Si no hay ganador, revisamos si hay empate
-		} else if (newBoard.every((square) => square !== null)) {
-			setWinner(false); //false significa que hay empate
+		} else if (checkEndGame(newBoard)) {
+			//Si chequeamos el juego y no hay un ganador, significa que hay un empate
+			setWinner(false); //seteamos el ganador como false (que significaba el empate)
 		}
 	};
 
 	return (
 		<main className="board">
 			<h1>Tic Tac Toe</h1>
+			<button onClick={resetGame}>Reset del juego</button>
 			<section className="game">
-				{board.map((_, index) => {
+				{board.map((primeraPosCuadrado, index) => {
+					//primeraPosCuadrado es lo que hay en la posición del tablero
 					return (
 						<Square key={index} index={index} updateBoard={updateBoard}>
-							{board[index]}
+							{primeraPosCuadrado}
 						</Square>
 					);
 				})}
@@ -117,6 +87,8 @@ function App() {
 				<Square isSelected={turn === TURNS.X}>{TURNS.X}</Square>
 				<Square isSelected={turn === TURNS.O}>{TURNS.O}</Square>
 			</section>
+
+			<WinnerModal resetGame={resetGame} winner={winner}></WinnerModal>
 		</main>
 	);
 }
