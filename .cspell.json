@@ -25,6 +25,7 @@
 	//Ignoramos estas palabras
 	"ignoreWords": [
 		"Boton",
+		"DATASO",
 		"Elon",
 		"Iturra",
 		"Snowly",

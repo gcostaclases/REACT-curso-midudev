@@ -1,4 +1,6 @@
+parseamos
 pasale
+pasarle
 pasarles
 renderice
 renderiza
