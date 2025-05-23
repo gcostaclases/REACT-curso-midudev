@@ -9,6 +9,8 @@ import { TURNS } from "./constants.js";
 import { checkWinnerFrom, checkEndGame } from "./logic/board.js";
 //Importamos el modal del ganador
 import { WinnerModal } from "./components/WinnerModal.jsx";
+//Importamos la lógica del localStorage
+import { saveGameToStorage, resetGameStorage } from "./logic/storage/index.js";
 import "./App.css";
 
 //Fuera de contexto - estudiando rest operator y spread operator
@@ -22,10 +24,41 @@ import "./App.css";
 */
 
 function App() {
+	//DATASO: Los hooks (como el useState) siempre tienen que estar en el cuerpo de la función
+	//Nunca se pueden usar dentro de un if, for, while, etc.
+
+	/*
 	//Estado para el tablero
 	const [board, setBoard] = useState(Array(9).fill(null));
 	//Estado para los turnos
 	const [turn, setTurn] = useState(TURNS.X);
+	*/
+
+	console.log("render");
+	//const boardFromStorage = window.localStorage.getItem("board"); //ESTO ES LENTO!!!!
+
+	//Cambio estos dos (el estado del tablero y del turno) usando el localStorage
+	//En vez de pasarle el valor inicial al useState, le pasamos una función
+	const [board, setBoard] = useState(() => {
+		console.log("inicializar estado del board");
+		//ES IMPORTANTE recuperar el localStorage cuando se inicializa el estado
+		//o sea, dentro de esta función, porque el estado se inicializa una sola vez
+		//si nosotros ponemos esto fuera de esta función, se va a recuperar cada vez que se renderiza el componente, y esto es muy lento!!
+		//Recuperamos el tablero del localStorage
+		const boardFromStorage = window.localStorage.getItem("board");
+		//Y si tengo algo guardado, lo parseamos (volvemos el array/objeto a su forma original)
+		// y lo devolvemos
+		//Sino le pasamos el valor inicial, como teníamos antes, que es el array de 9 posiciones vacías
+		return boardFromStorage
+			? JSON.parse(boardFromStorage)
+			: Array(9).fill(null);
+	});
+
+	const [turn, setTurn] = useState(() => {
+		const turnFromStorage = window.localStorage.getItem("turn");
+		return turnFromStorage ?? TURNS.X; //Si no hay nada guardado, le pasamos el valor inicial
+	});
+
 	//Estado para el ganador
 	const [winner, setWinner] = useState(null); //null significa que no hay ganador, false significa que hay empate
 
@@ -34,6 +67,9 @@ function App() {
 		setBoard(Array(9).fill(null)); //Reseteamos el tablero
 		setTurn(TURNS.X); //Reseteamos el turno
 		setWinner(null); //Reseteamos el ganador
+
+		//Limpiamos el localStorage
+		resetGameStorage();
 	};
 
 	//Función para actualizar el tablero
@@ -55,6 +91,12 @@ function App() {
 		const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X;
 		//Actualizamos el estado de los turnos
 		setTurn(newTurn);
+
+		//Guardamos el tablero y el turno en el localStorage
+		saveGameToStorage({
+			board: newBoard,
+			turn: newTurn,
+		});
 
 		//Revisamos si hay un ganador
 		const newWinner = checkWinnerFrom(newBoard);
