@@ -1,4 +1,4 @@
-import { useState } from "react"; 
+import { useState } from "react";
 import confetti from "canvas-confetti"; //Librería para hacer confetti
 //Importamos los componentes
 import { Square } from "./components/Square.jsx";
