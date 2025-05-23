@@ -1,7 +1,9 @@
 pasale
 pasarles
-renderiza
 renderice
-renderizar
+renderiza
 renderizado
 renderizamos
+renderizar
+Reseteamos
+seteamos

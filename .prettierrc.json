@@ -4,6 +4,6 @@
 	"withNodeModules": true,
 	"bracketSameLine": true,
 	"endOfLine": "crlf",
-	"printWidth": 120,
+	"printWidth": 80,
 	"trailingComma": "es5"
 }
