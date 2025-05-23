@@ -1,0 +1,9 @@
+{
+	"semi": true,
+	"useTabs": true,
+	"withNodeModules": true,
+	"bracketSameLine": true,
+	"endOfLine": "crlf",
+	"printWidth": 120,
+	"trailingComma": "es5"
+}
